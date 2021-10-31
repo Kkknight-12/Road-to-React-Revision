@@ -41,57 +41,37 @@ const App = () => {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   } )
 
+  /* 
+  Instead of using the label prop from before, we inserted the text “Search:” between the component’s element’s tags. In the InputWithLabel component, you have access to this information via React’s children prop. 
+  */
   return (
     <>
       <h1>My Hacker Stories</h1>
-      <Search 
-        search={searchTerm}
-        onSearch={handleSearch} 
-      />
+     
       {/* new seach component */}
       <InputWithLabel
-        id= "search"
-        label= "Search"
-        value = {searchTerm}
-        onInputChange = {handleSearch}
-      />
+      id= "search"
+      // label= "Search"
+      value = {searchTerm}
+      onInputChange = {handleSearch}
+      >
+        <strong>Search:</strong>
+      </InputWithLabel>
+
       <hr />
       <List list={searchedStories} />
     </>
   );
 };
 
-const Search = ({ search, onSearch }) => (
-  <>
-    <label htmlFor="search">
-      Search:
-    </label>
-    <input id="search" type="text" 
-      value={search}
-      onChange={onSearch} 
-    />
-  </>
-);
-
-// const InputWithLabel = ( { id, label, value, onInputChange }) => (
-//   <>
-//     <label htmlFor={id}>{label}</label>
-//     &nbsp;
-//     <input  
-//       id={id}
-//       type="text"
-//       value={value}
-//       onChange={onInputChange}
-//     />
-//   </>
-// );
-/* It’s not fully reusable yet. If we want an input
-field for data like a number (number) or phone number
-(tel), the type attribute of the input field needs to be accessible from the outside too:
+/* 
+Instead of using the label prop, use the children prop to render everything that has been passed down from above where you want it: 
 */
-const InputWithLabel = ( { id, label, value, onInputChange, type="text" }) => (
+const InputWithLabel = ( { id, children, value, onInputChange, type="text" }) => {
+  {console.log(children)}; // Search:
+  return(
   <>
-    <label htmlFor={id}>{label}</label>
+    <label htmlFor={id}>{children}</label>
     &nbsp;
     <input  
       id={id}
@@ -100,16 +80,14 @@ const InputWithLabel = ( { id, label, value, onInputChange, type="text" }) => (
       onChange={onInputChange}
     />
   </>
-);
-// so now the default seach is text but if something else is send like number it will be overwritten
+  )
+};
+// You can pass components via React children as well.
 
 /* 
-With just a few changes we turned a specialized 
-Search component into a more reusable component. 
-We generalized the naming of the internal
-implementation details and gave the new component 
-a larger API surface to provide all the necessary
-information from the outside.
+Now the React component’s elements behave similar to native HTML. 
+
+Everything that’s passed between a component’s elements can be accessed as children in the component and be rendered somewhere. Sometimes when using a React component, you want to have more freedom from the outside what to render in the inside of a component: 
 */
 
 const List = ({ list }) =>                       
