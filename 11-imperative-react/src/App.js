@@ -51,8 +51,9 @@ const App = () => {
       {/* new seach component */}
       <InputWithLabel
       id= "search"
-      // label= "Search"
       value = {searchTerm}
+      /* Using just isFocused as an attribute is equivalent to isFocused={true}.*/
+      isFocused
       onInputChange = {handleSearch}
       >
         <strong>Search:</strong>
@@ -64,30 +65,87 @@ const App = () => {
   );
 };
 
+// declarative approch
+// const InputWithLabel = ( { 
+//   id, children, value, onInputChange, type="text" }
+// ) =>(
+//   <>
+//     <label htmlFor={id}>{children}</label>
+//     &nbsp;
+//     <input  
+//       id={id}
+//       type={type}
+//       value={value}
+//       autoFocus
+//       onChange={onInputChange}
+//     />
+//   </>
+// );
 /* 
-Instead of using the label prop, use the children prop to render everything that has been passed down from above where you want it: 
+This works, but only if one of the reusable components is rendered once. For example, if the App component renders two InputWithLabel components, only the last rendered component receives the auto-focus on its render.
 */
-const InputWithLabel = ( { id, children, value, onInputChange, type="text" }) => {
-  {console.log(children)}; // Search:
-  return(
-  <>
-    <label htmlFor={id}>{children}</label>
-    &nbsp;
-    <input  
-      id={id}
-      type={type}
-      value={value}
-      onChange={onInputChange}
-    />
-  </>
+
+// declarative approch but works
+// const InputWithLabel = ( { id, children, value, onInputChange, type="text", isFocused }) =>{
+
+//   return( 
+//     <>
+//         <label htmlFor={id}>{children}</label>
+//         &nbsp;
+//         <input
+//           id={id}
+//           type={type}
+//           autoFocus={isFocused}
+//           value={value}
+//           onChange={onInputChange}
+//         />
+//     </>
+//   )
+// };
+
+//
+// Imperative Approch
+const InputWithLabel = ( { id, children, value, onInputChange, type="text", isFocused }) =>{
+  
+  // 1
+  const inputRef = React.useRef();
+
+  // 3
+  React.useEffect( () => {
+    // console.log(isFocused); // true
+    // console.log(inputRef.current); 
+    //  <input id= "search" type="text" value="react" />
+    if( isFocused && inputRef.current ){
+      // 4
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
+
+  return( 
+    <>
+        <label htmlFor={id}>{children}</label>
+        &nbsp;
+        <input
+        // 2
+          ref={inputRef}  
+          id={id}
+          type={type}
+          value={value}
+          onChange={onInputChange}
+        />
+    </>
   )
 };
-// You can pass components via React children as well.
+/*  
+1) React’s useRef hook is a persistent value which stays intact over the lifetime of a React component.
+It comes with a property called current, which, in contrast to the ref object, can be changed.
 
-/* 
-Now the React component’s elements behave similar to native HTML. 
+2) ref is passed to the input field’s JSX-reserved ref attribute
 
-Everything that’s passed between a component’s elements can be accessed as children in the component and be rendered somewhere. Sometimes when using a React component, you want to have more freedom from the outside what to render in the inside of a component: 
+3) React’s useEffect Hook perform the focus on the input field when the component renders or it's dependecies change.
+
+4) ref ( inputRef ) is passed to input field's ref attribute, it's current property give access to the element. 
+Execute its focus programatically as a side-effect, but only if isFocused is set and the current property is existent
 */
 
 const List = ({ list }) =>                       
