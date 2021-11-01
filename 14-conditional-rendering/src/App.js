@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css';
 
-// initial list
 const initialStories = [
     {
       title: 'React',
@@ -21,7 +20,6 @@ const initialStories = [
     },
 ];
 
-/* function will returns a promise – data, once it resolves. The resolved object holds the previous list of stories */
 const getAsyncStories = () => {
   return new Promise( ( resolve => {
     // fetching these stories asynchronously
@@ -41,28 +39,35 @@ const useSemiPersistentState = ( key, initialState ) => {
   return [ value, setValue ];
 };
 
+// Asynchronous data in React leaves us with 
+// conditional states: with data and without data.
 const App = () => {
 
   const [ searchTerm, setSearchTerm ] = useSemiPersistentState('search', 'React');
-  
-  //  use an empty array for the initial state
+
   const [ stories, setStories ] = React.useState([]);
 
-  React.useEffect( () => {
-    getAsyncStories().then( result => {
-      setStories( result.data.stories );
-    });
-  }, []);
+  const [ isLoading, setIsLoading ] = React.useState(false);
 
-  /* Once you start the application again, you should
-  see a delayed rendering of the list. The initial
-  state for the stories is an empty array. After 
-  the App component rendered, the side-effect hook
-  runs once to fetch the asynchronous data. After 
-  resolving the promise and setting the data in 
-  the component’s state, the component renders 
-  again and displays the list of asynchronously 
-  loaded stories. */
+  /* Asynchronous data comes with error handling,
+  too. It doesn’t happen in our simulated
+  environment, but there could be errors if we
+  start fetching data from another third-party 
+  API. Introduce another state for error handling 
+  and solve it in the promise’s catch() block when
+  resolving the promise: */
+  const [ isError, setIsError ] = React.useState(false);
+  
+  React.useEffect( () => {
+    setIsLoading(true);
+
+    getAsyncStories()
+      .then( result => {
+        setStories( result.data.stories );
+        setIsLoading(false);
+      })
+      .catch( () => setIsError(true));
+  }, []);
 
   const handleSearch = event => {
     setSearchTerm(event.target.value);
@@ -92,10 +97,22 @@ const App = () => {
       </InputWithLabel>
 
       <hr />
-      <List 
-        list={searchedStories} 
-        onRemoveItem={handleRemoveStory}
-      />
+      {/* Next, give the user feedback in case 
+      something went wrong with another conditional 
+      rendering. This time, it’s either rendering 
+      something or nothing. So instead of having a 
+      ternary operator where one side returns null, 
+      use the logical && operator as shorthand: */}
+      { isError && <p>Something went wrong ...</p>}
+
+      { isLoading ? ( <p>Loading ...</p> )
+        : (
+          <List 
+            list={searchedStories} 
+            onRemoveItem={handleRemoveStory}
+          />
+        )
+      }
     </>
   );
 };
