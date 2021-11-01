@@ -21,8 +21,10 @@ const initialStories = [
     },
 ];
 
+/* function will returns a promise – data, once it resolves. The resolved object holds the previous list of stories */
 const getAsyncStories = () => {
   return new Promise( ( resolve => {
+    // fetching these stories asynchronously
     setTimeout( () => {
       resolve( { data: { stories: initialStories } })
     }, 2000);
@@ -43,6 +45,7 @@ const App = () => {
 
   const [ searchTerm, setSearchTerm ] = useSemiPersistentState('search', 'React');
   
+  //  use an empty array for the initial state
   const [ stories, setStories ] = React.useState([]);
 
   React.useEffect( () => {
@@ -50,6 +53,8 @@ const App = () => {
       setStories( result.data.stories );
     });
   }, []);
+
+  /* Once you start the application again, you should see a delayed rendering of the list. The initial state for the stories is an empty array. After the App component rendered, the side-effect hook runs once to fetch the asynchronous data. After resolving the promise and setting the data in the component’s state, the component renders again and displays the list of asynchronously loaded stories. */
 
   const handleSearch = event => {
     setSearchTerm(event.target.value);
@@ -86,8 +91,7 @@ const App = () => {
     </>
   );
 };
-//
-// Imperative Approch
+
 const InputWithLabel = ( { id, children, value, onInputChange, type="text", isFocused }) =>{
   
   const inputRef = React.useRef();
